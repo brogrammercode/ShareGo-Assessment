@@ -101,6 +101,6 @@ Feel free to use, modify, and distribute 🚀
 ---
 
 <div align="center">  
-  Made with ❤️ using Flutter by <b>Harsh</b>  
+  Made with ❤️ using Flutter Socket by <b>Harsh</b>  
 </div>
 
