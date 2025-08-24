@@ -49,8 +49,8 @@ Think of it as your very own **SHAREit alternative**, but fully open-source and 
 ## 🛠 Installation & Setup
 1. Clone the repo  
    ```bash
-   git clone https://github.com/brogrammercode/ShareGo---Assessment.git
-   cd ShareGo---Assessment 
+   git clone https://github.com/brogrammercode/ShareGo_.git
+   cd ShareGo_ 
    ```
 2. Install dependencies
     ```
