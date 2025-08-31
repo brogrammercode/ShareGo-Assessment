@@ -6,12 +6,14 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:developer' as dev;
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:shareit/main.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/device_info_model.dart';
@@ -241,10 +243,73 @@ class ShareDataSource {
     }
   }
 
+  Future<bool> _showSimplePermissionDialog() async {
+    final context = navigatorKey.currentContext;
+    return await showDialog<bool>(
+          context: context!,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.file_download, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text(
+                    'Incoming File Transfer',
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                'A device wants to send you files. Do you want to accept this transfer?',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+              ),
+              actions: [
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  label: Text(
+                    'Deny',
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  label: Text(
+                    'Accept',
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
   Future<void> _handleIncomingTransfer(Socket client) async {
     _receivingController.add(true);
     _statusController.add(TransferStatus.transferring);
     _messageController.add('Receiving files...');
+
+    final bool userAccepted = await _showSimplePermissionDialog();
+
+    if (!userAccepted) {
+      _statusController.add(TransferStatus.cancelled);
+      _messageController.add('Transfer request denied');
+      client.close();
+      _receivingController.add(false);
+      return;
+    }
 
     try {
       final buffer = <int>[];
